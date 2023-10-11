@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+    <%- include('partials/head',{
+        title : genre.name
+    })%>
+<body>
+    <%- include('partials/header')%>   
+    <h1><%= genre.name %> </h1>
+    <br>
+    <hr>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/genres">Géneros</a></li>
+          <li class="breadcrumb-item active" aria-current="page"><%= genre.name %></li>
+      
+        </ol>
+      </nav>
+      <hr>
+    <p>NAME: <%= genre.name %> </p>
+    <p>RANKIG: <%= genre.ranking %> </p>
+
+    <section class="section-buttons">
+        <!--Aquí debe colocar los botones de Modificar - Borrar y Listado de Películas-->
+        <a  class="botonVolver" href="/genres">Listado de Generos</a></p>
+    </section>
+</body>
+</html>

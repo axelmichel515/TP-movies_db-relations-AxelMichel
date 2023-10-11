@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+    <%- include('partials/head',{
+        title : 'Películas ordenas por fecha'
+    })%>
+<body>
+    <%- include('partials/header')%>
+    <h1>PELIÍCULAS ORDENADAS POR FECHA</h1>
+    <ul>
+        <% for( let i = 0; i < movies.length; i++ ) { %>
+        <li>
+            <a href="/movies/detail/<%=movies[i].id%>"><%= movies[i].title %> </a> <br>
+            <%= 'RELEASE DATE: ' + moment(movies[i].release_date).format('DD/MM/YYYY') %> 
+        </li>
+        <% } %>
+        
+    </ul>
+</body>
+</html>
