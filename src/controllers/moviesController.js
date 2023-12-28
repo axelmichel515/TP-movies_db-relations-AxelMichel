@@ -1,10 +1,12 @@
+const db = require('../database/models');
+const moment = require('moment')
+const {validationResult} = require('express-validator');
+const paginate = require('express-paginate');
+const axios = require('axios')
+const { Op } = require('sequelize');
+const API = 'http://www.omdbapi.com/?apikey=d1dcd02a';
 
-const db = require("../database/models");
-const sequelize = db.sequelize;
-const { Op } = require("sequelize");
-//const { title } = require("process");
-const moment = require('moment');
-const Actor_Movie = require("../database/models/Actor_Movie");
+
 
 //Aqui tienen una forma de llamar a cada uno de los modelos
 // const {Movies,Genres,Actor} = require('../database/models');
@@ -15,13 +17,27 @@ const Genres = db.Genre;
 const Actors = db.Actor;
 
 const moviesController = {
-  list: (req, res) => {
-    db.Movie.findAll({
-        include : ['genre']
-    }).then((movies) => {
-      res.render("moviesList.ejs", { movies });
-    });
-  },
+list: (req, res) => {
+
+    db.Movie.findAndCountAll({
+        include: ['genre'],
+        limit: req.query.limit,
+        offset: req.skip
+    })
+        .then(({count,rows}) => {
+            const pagesCount = Math.ceil(count / req.query.limit)
+            const pages = paginate.getArrayPages(req)(pagesCount, pagesCount, req.query.page);
+
+            res.render('moviesList', {
+            movies : rows,
+            pages: pages,
+            paginate,
+            pagesCount,
+            currentPage : req.query.page,
+            result : 0
+        })
+        })
+},
   detail: (req, res) => {
     
     db.Movie.findByPk(req.params.id,{
@@ -73,43 +89,57 @@ const moviesController = {
     })
     .catch(error => console.log(error))
   },
-  create: function (req, res) {
-    
-    const {title, rating, awards, release_date, length, genre_id} = req.body;
-
-    const actors = [req.body.actors].flat();
-    console.log(actors);
-
-    db.Movie.create({
-        title: title.trim(),
-        rating,
-        awards,
-        release_date,
-        length,
-        genre_id,
-        image : req.file ? req.file.filename : null
-    })
-    .then((movie) => {
-      if(actors){
-      const actorsDB = actors.map(actor =>{
-        return {
-          movie_id : movie.id,
-          actor_id : actor
-        }
-      })
-      db.Actor_Movie.bulkCreate(actorsDB,{
-        validate : true
-      }).then(() => { 
-        console.log('Actores agregados correctamente')
-
-      return res.redirect('/movies');
-      })
-     } else {
-      return res.redirect('/movies');
-     }
-    })
-    .catch(error => console.log(error))
-  },
+  create: function (req,res) {
+    const errors = validationResult(req);
+    if(errors.isEmpty()){
+        let {title, rating, release_date, awards, length, genre_id, actors} = req.body;
+        actors = typeof actors === "string"? [actors] : actors;
+        db.Movie.create({
+            title:title.trim(), 
+            rating, 
+            release_date, 
+            awards, 
+            length,
+            genre_id,
+            image: req.file? req.file.filename :  null
+        })
+        .then(newMovie=>{
+            if(actors){
+                let actorDB = actors.map(actor => {
+                    return {
+                        movie_id: newMovie.id,
+                        actor_id: actor
+                    }
+                })
+                // return res.send(actorDB);
+                db.Actor_Movie.bulkCreate(actorDB,{
+                    validate: true
+                })
+                .then(()=>console.log('Actores agregados correctamente'))
+            }
+            console.log(newMovie)
+            return res.redirect('/movies')
+        })
+        .catch(err => console.log(err))
+    }else{
+        // return res.send(errors)
+        const actors = db.Actor.findAll();
+        const genres = db.Genre.findAll({
+            order: ['name']
+        });
+        Promise.all([actors, genres])
+            .then(([actors, genres]) => {
+                // return res.send(req.body)
+                return res.render('moviesAdd',{
+                    actors,
+                    allGenres: genres,
+                    errors: errors.mapped(),
+                    old: req.body,
+                })
+            })
+            .catch(error => console.log(error))
+    }
+},
   edit: function (req, res) {
     const genres = db.Genre.findAll({
       order: ['name'],
@@ -209,6 +239,34 @@ const moviesController = {
       })
     })
     .catch((error) => console.log(error))
+  },
+  search : (req,res) => {
+    const keyword = req.query.keyword
+
+    db.Movie.findAll({
+      where: {
+          title: {
+              [Op.substring]: keyword
+          }
+      }
+  }).then(movies => {
+      if (!movies.length) {
+          return axios.get(`${API}&t=${keyword}`)
+              .then(movieApi => {
+                  const movie = movieApi.data;
+                  return res.render('moviesDetailOmdb', {
+                      movie
+                  });
+              
+        }).catch(error => console.log(error))
+}
+      const pages = paginate.getArrayPages(req)(1, 1, req.query.page);
+      return res.render('moviesList',{
+        movies ,
+        result : 1,
+        pages
+      })
+    }).catch(error => console.log(error))
   }
 };
 

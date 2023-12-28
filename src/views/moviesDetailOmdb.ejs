@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head',{
+        title : movie.title
+    })%>
+   
+    
+
+</head>
+<body>
+    <figure>
+        <img src="/img/logo-DH.png" alt="Logo Digital House">
+    </figure>
+    <h1><%= movie.Title %> </h1>    
+    <br>
+    <figure>
+        <img src="<%= movie.Poster %>" alt="<%= movie.Title %>">
+    </figure>
+    <div class="cardDetail">
+    <p>AÑO: <%= movie.Year %> </p>
+    <p>PREMIOS: <%= movie.Awards %> </p>
+    <p>DURACIÓN: <%= movie.Runtime%> </p>
+</div>
+
+    <br>
+    <a class="botonVolver" href="/movies">Listado de Películas</a>
+
+</body>
+</html>

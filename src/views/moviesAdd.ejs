@@ -66,6 +66,22 @@
                 <input type="file" name="image" id="image" hidden />
                 
               </div>
+              <div class="mb-3 md-col-12">
+                <h5 class="form-label">Actores</h5>
+                <hr>
+                <div class="row">
+                    <% actors.forEach(actor => { %>
+                        <div class="col-12 col-md-3 col-lg-2">
+                            <div class="form-check">
+                                <input name="actors" class="form-check-input d-flex gap-1" <%= locals.old && old.actors.find(movie_actor => movie_actor == actor.id ) && 'checked' %>  type="checkbox" value="<%= actor.id %>" id="actor<%= actor.id %>" >
+                                <label class="form-check-label" for="actor<%= actor.id %>">
+                                    <%= actor.first_name %>
+                                    <%= actor.last_name %>
+                                </label>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
               
 
 <br>

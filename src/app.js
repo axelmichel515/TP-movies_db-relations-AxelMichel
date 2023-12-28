@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const paginate = require('express-paginate')
 
 
 const indexRouter = require('./routes/index');
@@ -10,6 +11,7 @@ const methodOverride = require('method-override');
 const app = express();
 
 app.use(methodOverride('_method'));
+app.use(paginate.middleware(8,50))
 // view engine setup
 app.set('views', path.resolve(__dirname, './views'));
 app.set('view engine', 'ejs');

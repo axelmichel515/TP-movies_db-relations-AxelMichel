@@ -5,83 +5,130 @@
     title : 'Listado de películas'
 })%>
 
-<body>
+<body class="movieList">
     <%- include('partials/header')%>
     <h1>LISTADO DE PELÍCULAS</h1>
     <br>
-    <p>
-        <a class="botonAgregar" href="/movies/add">Agregar una Pelicula</a>
-        <a class="botonVolver" href="/">inicio</a>
-
-    </p>
+   
+    
+   
     <br>
     <hr>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="/">Home</a></li>
-          <li class="breadcrumb-item active" aria-current="page"><a href="/movies">Películas</a></li>
+    <p>
       
-        </ol>
-      </nav>
+      <a class="botonAgregar" href="/movies/add">Agregar una Pelicula</a>
+      <a class="botonVolver" href="/">inicio</a>
+      
+  </p>
+      <div class="d-flex justify-content-center">    
+        <form action="/movies/search" method="GET" class="d-flex">
+          <input type="text" class="form-control w-auto" name="keyword">
+          <button id="btn-search" class="btn btn-outline-dark" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </form>
+      </div>
+      
       <hr>
     <div class="table-responsive shadow-lg p-3 mb-5 bg-body-tertiary rounded">
-    <table class="table table-striped">
-    <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Titulo</th>
-            <th scope="col">Rating</th>
-            <th scope="col">Premios</th>
-            <th scope="col">Género</th>
-            <th scope="col">Acciones</th>
-        </tr>
-    </thead>
-  <tbody>
-    <% movies.forEach(movie => {  %>
-        <tr>
-            <th scope="row" class= "border border-secondary-subtle rounded-3"><%= movie.id %></th>
-            <td class= "border border-secondary-subtle rounded-3"><%= movie.title %></td>
-            <td class= "border border-secondary-subtle rounded-3"><%= movie.rating %></td>
-            <td class= "border border-secondary-subtle rounded-3"><%= movie.awards %></td>
-            <td class= "border border-secondary-subtle rounded-3"><%= movie.genre?.name %></td>
-            <td class= "border border-secondary-subtle rounded-3">
-                <div class="btn--actions">
-                    <a href="/movies/detail/<%= movie.id %>" class="btn btn-primary"><i class="fa-solid fa-eye"></i></a>
-                    <a href="/movies/edit/<%= movie.id %>" class="btn btn-success"><i class="fas fa-edit"></i></a>
-                    <!-- Button trigger modal -->
-<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#movieModal<%= movie.id %>">
-    <i class="fas fa-trash"></i>
-  </button>
-  
-  <!-- Modal -->
-  <div class="modal fade" id="movieModal<%= movie.id %>" tabindex="-1" aria-labelledby="movieModal<%= movie.id %>Label" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5 text-danger" id="movieModal<%= movie.id %>Label">ADVERTENCIA</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <% if (result == 1) { %>
+            <li class="breadcrumb-item"><a href="/movies">Películas</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Resultado de la búsqueda</li>
+          <% }else{ %>
+            <li class="breadcrumb-item active" aria-current="page">Películas</li>
+          <% } %>
+        </ol>
+      </nav>
+      <% if (movies.length) { %>
+        <table class="table table-striped">
+          <div class="pagination mx-4 d-flex justify-content-center">
+            <nav aria-label="Page navigation example">
+              
+              <ul class="pagination">
     
-                 <p>¿Está seguro que desea eliminar la película: <span><b><%= movie.title %></b></span>?</p>
-            
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CANCELAR</button>
-          <form action="/movies/delete/<%= movie.id %>?_method=DELETE" method="POST">
-            <button type="submit" class="btn btn-primary">ELIMINAR</button>
-        </form>
+                <% if (paginate.hasPreviousPages || paginate.hasNextPages) { %>
+    
+                  <li class="page-item"> <a href="<%=paginate.href(true).prev%>" class="page-link"><i
+                        class="fa fa-angle-left"></i></a></li>
+    
+                  <% if (pages) { %>
+                    <% pages.forEach(page=> { %>
+                      <li class="page-number"> <a href="<%= page.url  %>"
+                          class="page-link <%= page.number === page.currentPage && 'active' %> ">
+                          <%= page.number %>
+                        </a> </li>
+                      <% }); %>
+                        <% } %>
+    
+                          <li class="page-item"><a href="<%= paginate.href(true).next %>" class="page-link prev"><i
+                                class="fa fa-angle-right"></i></a></li>
+                          <% } %>
+              </ul>
+            </nav>
+          </div>
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Titulo</th>
+                <th scope="col">Rating</th>
+                <th scope="col">Premios</th>
+                <th scope="col">Género</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+      <tbody>
+        <% movies.forEach(movie => {  %>
+            <tr>
+                <th scope="row" class= "border border-secondary-subtle rounded-3"><%= movie.id %></th>
+                <td class= "border border-secondary-subtle rounded-3"><%= movie.title %></td>
+                <td class= "border border-secondary-subtle rounded-3"><%= movie.rating %></td>
+                <td class= "border border-secondary-subtle rounded-3"><%= movie.awards %></td>
+                <td class= "border border-secondary-subtle rounded-3"><%= movie.genre?.name %></td>
+                <td class= "border border-secondary-subtle rounded-3">
+                    <div class="btn--actions">
+                        <a href="/movies/detail/<%= movie.id %>" class="btn btn-primary"><i class="fa-solid fa-eye"></i></a>
+                        <a href="/movies/edit/<%= movie.id %>" class="btn btn-success"><i class="fas fa-edit"></i></a>
+                        <!-- Button trigger modal -->
+    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#movieModal<%= movie.id %>">
+        <i class="fas fa-trash"></i>
+      </button>
+      
+      <!-- Modal -->
+      <div class="modal fade" id="movieModal<%= movie.id %>" tabindex="-1" aria-labelledby="movieModal<%= movie.id %>Label" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5 text-danger" id="movieModal<%= movie.id %>Label">ADVERTENCIA</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+        
+                     <p>¿Está seguro que desea eliminar la película: <span><b><%= movie.title %></b></span>?</p>
+                
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CANCELAR</button>
+              <form action="/movies/delete/<%= movie.id %>?_method=DELETE" method="POST">
+                <button type="submit" class="btn btn-primary">ELIMINAR</button>
+            </form>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-                   
-                </div>
-            </td>
-        </tr>
-        <% }) %>
-  </tbody>
-</table>
+                       
+                    </div>
+                </td>
+            </tr>
+            <% }) %>
+      </tbody>
+    </table>
+       
+      <% }else{%>
+        <div class="alert alert-warning" role="alert">
+          No hay resultados para la búsqueda
+        </div>
+      <% }%>
 </div>
 
 </body>
